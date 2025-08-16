@@ -15,7 +15,7 @@ class TestKinopoiskUI:
     @pytest.fixture(scope="function", autouse=True)
     def setup(self):
         self.driver = webdriver.Chrome()
-        self.driver.implicitly_wait(10)
+        self.driver.implicitly_wait(20)
         self.driver.get("https://www.kinopoisk.ru/")
         yield
         self.driver.quit()
@@ -27,7 +27,7 @@ class TestKinopoiskUI:
         search_bar.send_keys("Интерстеллар")
         search_bar.send_keys(Keys.ENTER)
 
-        movie_link = WebDriverWait(self.driver, 10).until(
+        movie_link = WebDriverWait(self.driver, 20).until(
             EC.element_to_be_clickable((By.LINK_TEXT, "Интерстеллар"))
         )
         movie_link.click()
@@ -42,12 +42,12 @@ class TestKinopoiskUI:
         search_bar.send_keys("Интерстеллар")
         search_bar.send_keys(Keys.ENTER)
 
-        movie_link = WebDriverWait(self.driver, 10).until(
+        movie_link = WebDriverWait(self.driver, 20).until(
             EC.element_to_be_clickable((By.LINK_TEXT, "Интерстеллар"))
         )
         movie_link.click()
 
-        movie_info = WebDriverWait(self.driver, 10).until(
+        movie_info = WebDriverWait(self.driver, 20).until(
             EC.presence_of_element_located((
                 By.CLASS_NAME, "styles_paragraph__wEGPz"))
         )
@@ -63,13 +63,13 @@ class TestKinopoiskUI:
         search_bar.send_keys("Интерстеллар")
         search_bar.send_keys(Keys.ENTER)
 
-        movie_link = WebDriverWait(self.driver, 10).until(
+        movie_link = WebDriverWait(self.driver, 20).until(
             EC.element_to_be_clickable((By.LINK_TEXT, "Интерстеллар"))
         )
         movie_link.click()
 
         # Находим постер фильма
-        poster_element = WebDriverWait(self.driver, 10).until(
+        poster_element = WebDriverWait(self.driver, 20).until(
             EC.presence_of_element_located((
                 By.CLASS_NAME, "styles_posterLink__C1HRc"))
         )
@@ -100,7 +100,7 @@ class TestKinopoiskUI:
     @allure.story("Сортировка фильмов по жанру")
     def test_sort_movies_by_genre(self):
         # Ожидание загрузки главной страницы
-        WebDriverWait(self.driver, 10).until(
+        WebDriverWait(self.driver, 20).until(
             EC.presence_of_element_located((
                 By.CLASS_NAME, "styles_advancedSearch__uwvnd"))
         )
@@ -111,7 +111,7 @@ class TestKinopoiskUI:
         advanced_search_button.click()
 
         # Ожидание загрузки страницы расширенного поиска
-        WebDriverWait(self.driver, 10).until(
+        WebDriverWait(self.driver, 20).until(
             EC.presence_of_element_located((By.ID, "m_act[genre]"))
         )  # Ожидаем загрузки элемента с ID
 
@@ -120,7 +120,7 @@ class TestKinopoiskUI:
         genre_select.click()  # Кликаем на выпадающий список
 
         # Ожидание появления опции жанра "биография"
-        WebDriverWait(self.driver, 10).until(
+        WebDriverWait(self.driver, 20).until(
             EC.presence_of_element_located((
                 By.XPATH, "//option[@value='22' and text()='биография']"))
         )
@@ -131,14 +131,14 @@ class TestKinopoiskUI:
                                    'change'))", genre_select)
 
         # Ожидание загрузки кнопки "поиск"
-        search_button = WebDriverWait(self.driver, 10).until(
+        search_button = WebDriverWait(self.driver, 20).until(
             EC.element_to_be_clickable((
                 By.CLASS_NAME, "el_18.submit.nice_button"))
         )
         search_button.click()
 
         # Ожидание загрузки результатов поиска
-        results_header = WebDriverWait(self.driver, 10).until(
+        results_header = WebDriverWait(self.driver, 20).until(
             EC.presence_of_element_located((
                 By.CLASS_NAME, "search_results_topText"))
         )
@@ -164,13 +164,13 @@ class TestKinopoiskUI:
         search_bar.send_keys("Интерстеллар")
         search_bar.send_keys(Keys.ENTER)
 
-        movie_link = WebDriverWait(self.driver, 10).until(
+        movie_link = WebDriverWait(self.driver, 20).until(
             EC.element_to_be_clickable((By.LINK_TEXT, "Интерстеллар"))
         )
         movie_link.click()
 
         # Переход на страницу с главными ролями
-        cast_link = WebDriverWait(self.driver, 10).until(
+        cast_link = WebDriverWait(self.driver, 20).until(
             EC.element_to_be_clickable((By.LINK_TEXT, "В главных ролях"))
         )
         cast_link.click()
