@@ -60,6 +60,7 @@ allure serve allure_results
 ### Полезные ссылки
 - [Подсказка по markdown](https://www.markdownguide.org/basic-syntax/)
 - [Генератор файла .gitignore](https://www.toptal.com/developers/gitignore)
+- [Про Pip freeze](https://pip.pypa.io/en/stable/cli/pip_freeze/)
 
 ### Библиотеки (!)
 - pip install pytest
