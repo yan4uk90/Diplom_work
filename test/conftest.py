@@ -5,13 +5,13 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 
 @pytest.fixture(scope="function", autouse=True)
-def setup(self):
+def setup():
     """
     Фикстура для создания и закрытия браузера Chrome.
     """
     service = ChromeService(executable_path=ChromeDriverManager().install())
-    self.driver = webdriver.Chrome(service=service)
-    self.driver.implicitly_wait(20)
-    self.driver.get("https://www.kinopoisk.ru/")
+    driver = webdriver.Chrome(service=service)
+    driver.implicitly_wait(20)
+    driver.get("https://www.kinopoisk.ru/")
     yield
-    self.driver.quit()
+    driver.quit()

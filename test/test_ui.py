@@ -7,6 +7,12 @@ import requests
 import os
 
 
+def test_example(browser):
+    browser.get("https://www.kinopoisk.ru/")
+    element = browser.find_element(By.TAG_NAME, "h1")
+    assert element.text == "Example Domain"
+
+
 @allure.feature("UI Tests for Kinopoisk")
 class TestKinopoiskUI:
 
