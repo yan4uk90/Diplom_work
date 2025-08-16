@@ -1,5 +1,3 @@
-import pytest
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
@@ -11,14 +9,6 @@ import os
 
 @allure.feature("UI Tests for Kinopoisk")
 class TestKinopoiskUI:
-
-    @pytest.fixture(scope="function", autouse=True)
-    def setup(self):
-        self.driver = webdriver.Chrome()
-        self.driver.implicitly_wait(20)
-        self.driver.get("https://www.kinopoisk.ru/")
-        yield
-        self.driver.quit()
 
     @allure.story("Поиск фильма по названию")
     def test_search_movie_by_title(self):
