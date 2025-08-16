@@ -1,164 +1,266 @@
-import time
-import pytest
+# tests/test_get_movie_info.py
 import requests
+import pytest
 import allure
-from requests.exceptions import RequestException
+
+# Переменные
+baseURL = "TGRC0EB-VDQMMR8-N06G0BE-B5HDW3S"
+movie_id = 1130363
+invalidID = "ERROR"  # Неверный ID
+headers = {
+    "X-API-KEY": "a42e4573-55d5-48b8-bc51-9af46eeb0268"
+}
 
 
-# Конфигурация API
-# Базовый URL API Кинопоиска
-API_URL = "https://api.kinopoisk.dev/v1.4"
-# Замените на ваш действительный API-ключ
-API_KEY = "P9MD4VB-3ZPMSAE-Q0A1X8J-Y44118K"
+@allure.feature("Информация о фильме")
+@allure.story("Получение информации о фильме по ID через API")
+@pytest.mark.parametrize("movie_id", [1130363])
+# Можно добавить другие ID для тестов
+def test_get_movie_info(movie_id):
+    """Тест получения информации о фильме по ID"""
+    url = f"{baseURL}/api/v2.1/films/{movie_id}"
+
+    with allure.step("Отправка GET-запроса для получения информации о фильме"):
+        response = requests.get(url, headers=headers)
+
+    with allure.step("Проверка, что статус код ответа - 200"):
+        assert response.status_code == 200, f"Unexpected status code: {
+            response.status_code}"
+
+    with allure.step("Проверка содержимого JSON-ответа"):
+        data = response.json()
+        assert "data" in data, "Нет ключа 'data' в ответе"
+        assert data["data"]["filmId"] == movie_id, "ID фильма в ответе не \
+            совпадает с запрошенным"
+
+    with allure.step("Проверка на наличие названия фильма на русском языке"):
+        assert "nameRu" in data["data"], "Нет названия фильма на русском языке"
+        assert isinstance(data["data"]["nameRu"], str), "Название фильма \
+            должно быть строкой"
+        allure.attach(str(data["data"]["nameRu"]), name="Название фильма",
+                      attachment_type=allure.attachment_type.TEXT)
 
 
-# Фикстура для создания HTTP-сессии с авторизацией
-@pytest.fixture(scope="session")
-def api_client():
-    """Создает и настраивает HTTP-сессию с API-ключом для всех тестов"""
-    session = requests.Session()
-    # Добавляем заголовок авторизации
-    session.headers.update({"X-API-KEY": API_KEY})
-    return session
+@allure.feature("Похожие фильмы")
+@allure.story("Получение списка похожих фильмов по ID через API")
+@pytest.mark.parametrize("movie_id", [movie_id])
+# Можно добавить другие ID для тестов
+def test_get_similar_movies(movie_id):
+    """Тест получения списка похожих фильмов по ID"""
+    url = f"{baseURL}/api/v2.2/films/{movie_id}/similars"
+
+    with allure.step("Отправка GET-запроса для получения списка похожих \
+                     фильмов"):
+        response = requests.get(url, headers=headers)
+
+    with allure.step("Проверка, что статус код ответа - 200"):
+        assert response.status_code == 200, f"Unexpected status code: {
+            response.status_code}"
+
+    with allure.step("Проверка содержимого JSON-ответа"):
+        data = response.json()
+        assert "items" in data, "Нет ключа 'items' в ответе"
+        assert isinstance(data["items"], list), "Список похожих фильмов должен\
+            быть списком (list)"
+        allure.attach(str(len(data["items"])), name="Количество похожих \
+                      фильмов", attachment_type=allure.attachment_type.TEXT)
+
+    with allure.step("Проверка информации о первом похожем фильме"):
+        if data["items"]:
+            first_similar_movie = data["items"][0]
+            assert "filmId" in first_similar_movie, "Нет 'filmId' в информации\
+                о первом похожем фильме"
+            assert "nameRu" in first_similar_movie, "Нет 'nameRu' в информации\
+                о первом похожем фильме"
+            allure.attach(str(first_similar_movie["nameRu"]), name="Название \
+                          первого похожего фильма",
+                          attachment_type=allure.attachment_type.TEXT)
 
 
-# Основной класс тестов
-@allure.feature("API Testing")  # Группировка тестов в Allure отчете
-@allure.severity("blocker")  # Общая важность тестов в классе
-class TestKinopoiskAPI:
+@allure.feature("Прокатные данные")
+@allure.story("Получение прокатных данных фильма по ID через API")
+@pytest.mark.parametrize("movie_id", [movie_id])
+def test_get_movie_distributions(movie_id):
+    """Тест получения прокатных данных фильма по ID"""
+    url = f"{baseURL}/api/v2.2/films/{movie_id}/distributions"
 
-    @allure.title("Поиск фильма по ID")
-    @allure.description("Проверка получения информации о фильме по его ID")
-    def test_search_by_id(self, api_client):
-        """Тест проверяет корректность получения данных фильма по ID"""
-        with allure.step("Отправляем запрос на получение фильма по ID"):
-            try:
-                start_time = time.time()
-                # Запрос фильма с ID 5687
-                response = api_client.get(f"{API_URL}/movie/5687")
-                # Расчет времени ответа в мс
-                response_time = (time.time() - start_time) * 1000
+    with allure.step("Отправка GET-запроса для получения прокатных данных \
+                     фильма"):
+        response = requests.get(url, headers=headers)
 
-            except RequestException as e:
-                pytest.fail(f"Ошибка при выполнении запроса: {str(e)}")
+    with allure.step("Проверка, что статус код ответа - 200"):
+        assert response.status_code == 200, f"Unexpected status code: {
+            response.status_code}"
 
-        with allure.step("Проверяем результаты"):
-            # Проверка времени ответа
-            assert response_time < 500, f"Время отклика {response_time}ms \
-                превышает 500ms"
-            # Проверка статус-кода
-            assert response.status_code == 200, "Неверный статус-код ответа"
-            # Проверка наличия обязательных полей в ответе
-            movie_data = response.json()
-            assert "id" in movie_data, "Отсутствует поле id в ответе"
-            assert "name" in movie_data, "Отсутствует поле name в ответе"
+    with allure.step("Проверка содержимого JSON-ответа"):
+        data = response.json()
+        assert "items" in data, "Нет ключа 'items' в ответе"
+        assert isinstance(data["items"], list), "Прокатные данные должны быть \
+            списком (list)"
+        allure.attach(str(len(data["items"])), name="Количество прокатных \
+                      записей", attachment_type=allure.attachment_type.TEXT)
 
-    @allure.title("Поиск фильма по названию")
-    @allure.description("Проверка поиска фильмов по названию")
-    def test_search_by_name(self, api_client):
-        """Тест проверяет работу поиска фильмов по названию"""
-        with allure.step("Отправляем запрос на поиск фильма"):
-            try:
-                start_time = time.time()
-                response = api_client.get(f"{API_URL}/movie/search?query=Маска"
-                                          )
-                response_time = (time.time() - start_time) * 1000
+    with allure.step("Проверка информации о первой записи проката"):
+        if data["items"]:
+            first_distribution = data["items"][0]
+            assert "type" in first_distribution, "Нет ключа 'type' в первой \
+                записи проката"
+            allure.attach(str(first_distribution["type"]), name="Тип первой \
+                          записи проката",
+                          attachment_type=allure.attachment_type.TEXT)
 
-            except RequestException as e:
-                pytest.fail(f"Ошибка при выполнении запроса: {str(e)}")
 
-        with allure.step("Проверяем результаты"):
-            assert response_time < 500, f"Время отклика {response_time}ms \
-                превышает 500ms"
-            assert response.status_code == 200
-            search_results = response.json()
-            assert "docs" in search_results, "Отсутствует список результатов \
-                поиска"
-            assert len(search_results["docs"]) > 0, "Не найдено ни одного \
-                фильма"
+@allure.feature("Рецензии от зрителей")
+@allure.story("Получение списка рецензий от зрителей по ID фильма через API")
+@pytest.mark.parametrize("movie_id", [movie_id])
+def test_get_movie_reviews(movie_id):
+    """Тест получения списка рецензий от зрителей по ID фильма"""
+    url = f"{baseURL}/api/v2.2/films/{movie_id}/reviews"
 
-    @allure.title("Поиск фильмов по году выпуска")
-    @allure.description("Проверка фильтрации фильмов по году выпуска")
-    def test_search_by_year(self, api_client):
-        """Тест проверяет фильтрацию фильмов по году выпуска"""
-        with allure.step("Отправляем запрос на поиск по году"):
-            try:
-                start_time = time.time()
-                response = api_client.get(f"{API_URL}/movie?year=1990")
-                response_time = (time.time() - start_time) * 1000
+    with allure.step("Отправка GET-запроса для получения списка рецензий от \
+                     зрителей"):
+        response = requests.get(url, headers=headers)
 
-            except RequestException as e:
-                pytest.fail(f"Ошибка при выполнении запроса: {str(e)}")
+    with allure.step("Проверка, что статус код ответа - 200"):
+        assert response.status_code == 200, f"Unexpected status code: {
+            response.status_code}"
 
-        with allure.step("Проверяем результаты"):
-            assert response_time < 500, f"Время отклика {response_time}ms \
-                превышает 500ms"
-            assert response.status_code == 200
-            movies_data = response.json()
-            assert all(movie["year"] == 1990 for movie in movies_data["docs"]
-                       ), "Найдены фильмы не из 1990 года"
+    with allure.step("Проверка содержимого JSON-ответа"):
+        data = response.json()
+        assert "items" in data, "Нет ключа 'items' в ответе"
+        assert isinstance(data["items"], list), "Список рецензий должен быть \
+            списком (list)"
+        allure.attach(str(len(data["items"])), name="Количество рецензий",
+                      attachment_type=allure.attachment_type.TEXT)
 
-    @allure.title("Получение списка жанров")
-    @allure.description("Проверка получения списка возможных жанров")
-    def test_get_genres(self, api_client):
-        """Тест проверяет получение списка доступных жанров"""
-        with allure.step("Отправляем запрос на получение жанров"):
-            try:
-                start_time = time.time()
-                response = api_client.get(
-                    f"{API_URL}/movie/possible-values-by-field?field=genres.\
-                        name")
-                response_time = (time.time() - start_time) * 1000
+    with allure.step("Проверка информации о первой рецензии"):
+        if data["items"]:
+            first_review = data["items"][0]
+            assert "author" in first_review, "Нет ключа 'author' в информации \
+                о первой рецензии"
+            assert "date" in first_review, "Нет ключа 'date' в информации о \
+                первой рецензии"
+            assert "description" in first_review, "Нет ключа 'description' в \
+                информации о первой рецензии"
+            allure.attach(first_review["author"], name="Автор первой рецензии",
+                          attachment_type=allure.attachment_type.TEXT)
+            allure.attach(first_review["date"], name="Дата первой рецензии",
+                          attachment_type=allure.attachment_type.TEXT)
+            allure.attach(first_review["description"], name="Описание первой \
+                          рецензии",
+                          attachment_type=allure.attachment_type.TEXT)
 
-            except RequestException as e:
-                pytest.fail(f"Ошибка при выполнении запроса: {str(e)}")
 
-        with allure.step("Проверяем результаты"):
-            assert response_time < 500, f"Время отклика {response_time}ms \
-                превышает 500ms"
-            assert response.status_code == 200
-            genres = response.json()
-            assert isinstance(genres, list), "Список жанров должен быть \
-                массивом"
-            assert len(genres) > 0, "Список жанров пуст"
-            assert "name" in genres[0], "У жанра должно быть поле name"
+@allure.feature("Информация о фильме")
+@allure.story("Получение информации о фильме с некорректным ID")
+def test_get_movie_info_invalid_id():
+    """Тест получения информации о фильме с некорректным ID"""
+    url = f"{baseURL}/api/v2.2/films/{invalidID}"
 
-    @allure.title("Обработка некорректного ID")
-    @allure.description("Проверка обработки запроса с несуществующим ID")
-    @allure.severity("normal")  # Пониженная важность теста
-    def test_invalid_id(self, api_client):
-        """Тест проверяет обработку несуществующего ID фильма"""
-        with allure.step("Отправляем запрос с некорректным ID"):
-            try:
-                start_time = time.time()
-                response = api_client.get(f"{API_URL}/movie/0")
-                response_time = (time.time() - start_time) * 1000
+    with allure.step("Отправка GET-запроса для получения информации о фильме с\
+                     некорректным ID"):
+        response = requests.get(url, headers=headers)
 
-            except RequestException as e:
-                pytest.fail(f"Ошибка при выполнении запроса: {str(e)}")
+    with allure.step("Проверка, что статус код ответа - 400"):
+        assert response.status_code == 400, f"Unexpected status code: {
+            response.status_code}"
 
-        with allure.step("Проверяем результаты"):
-            assert response_time < 500, f"Время отклика {response_time}ms \
-                превышает 500ms"
-            assert response.status_code == 404, "Ожидался статус 404 для \
-                несуществующего ID"
+    with allure.step("Проверка содержимого JSON-ответа на наличие сообщения об\
+                     ошибке"):
+        data = response.json()
+        assert "message" in data, "В ответе отсутствует ключ 'message'"
+        allure.attach(data["message"], name="Сообщение об ошибке",
+                      attachment_type=allure.attachment_type.TEXT)
 
-    @allure.title("Обработка некорректного года")
-    @allure.description("Проверка обработки запроса с недопустимым годом")
-    @allure.severity("normal")
-    def test_invalid_year(self, api_client):
-        """Тест проверяет обработку недопустимого значения года"""
-        with allure.step("Отправляем запрос с некорректным годом"):
-            try:
-                start_time = time.time()
-                response = api_client.get(f"{API_URL}/movie?year=9999")
-                response_time = (time.time() - start_time) * 1000
 
-            except RequestException as e:
-                pytest.fail(f"Ошибка при выполнении запроса: {str(e)}")
+@allure.feature("Информация о фильме")
+@allure.story("Получение информации о фильме без ID")
+def test_get_movie_info_no_id():
+    """Тест получения информации о фильме без ID"""
+    noID = ""
+    url = f"{baseURL}/api/v2.2/films/{noID}"
 
-        with allure.step("Проверяем результаты"):
-            assert response_time < 500, f"Время отклика {response_time}ms \
-                превышает 500ms"
-            assert response.status_code == 400, "Ожидался статус 400 для \
-                недопустимого года"
+    with allure.step("Отправка GET-запроса для получения информации о фильме \
+                     без ID"):
+        response = requests.get(url, headers=headers)
+
+    with allure.step("Проверка, что статус код ответа - 400"):
+        assert response.status_code == 400, f"Unexpected status code: {
+            response.status_code}"
+
+    with allure.step("Проверка содержимого JSON-ответа на наличие сообщения об\
+                     ошибке"):
+        data = response.json()
+        assert "message" in data, "В ответе отсутствует ключ 'message'"
+        allure.attach(data["message"], name="Сообщение об ошибке",
+                      attachment_type=allure.attachment_type.TEXT)
+
+
+@allure.feature("Прокатные данные фильма")
+@allure.story("Получение прокатных данных фильма с использованием неверного \
+              метода")
+@pytest.mark.parametrize("movie_id", [movie_id])
+def test_get_distributions_invalid_method(movie_id):
+    """Тест получения прокатных данных фильма с использованием неверного \
+        метода"""
+    url = f"{baseURL}/api/v2.2/films/{movie_id}/distributions"
+
+    with allure.step("Отправка POST-запроса для получения прокатных данных \
+                     фильма"):
+        response = requests.post(url, headers=headers)
+
+    with allure.step("Проверка, что статус код ответа - 500"):
+        assert response.status_code == 500, f"Unexpected status code: {
+            response.status_code}"
+
+    with allure.step("Проверка содержимого JSON-ответа на наличие сообщения об\
+                     ошибке"):
+        data = response.json()
+        assert "message" in data, "В ответе отсутствует ключ 'message'"
+        allure.attach(data["message"], name="Сообщение об ошибке",
+                      attachment_type=allure.attachment_type.TEXT)
+
+
+@allure.feature("Информация о фильме")
+@allure.story("Получение информации о фильме по ID без авторизации")
+@pytest.mark.parametrize("movie_id", [movie_id])
+def test_get_movie_info_without_auth(movie_id):
+    """Тест получения информации о фильме по ID без авторизации"""
+    url = f"{baseURL}/api/v2.2/films/{movie_id}"
+
+    with allure.step("Отправка GET-запроса для получения информации о фильме \
+                     без авторизации"):
+        response = requests.get(url)  # Без токена
+
+    with allure.step("Проверка, что статус код ответа - 401"):
+        assert response.status_code == 401, f"Unexpected status code: {
+            response.status_code}"
+
+    with allure.step("Проверка содержимого JSON-ответа на наличие сообщения об\
+                     ошибке"):
+        data = response.json()
+        assert "message" in data, "В ответе отсутствует ключ 'message'"
+        allure.attach(data["message"], name="Сообщение об ошибке",
+                      attachment_type=allure.attachment_type.TEXT)
+
+
+@allure.feature("Рецензии на фильм")
+@allure.story("Получение списка рецензий от зрителей по неверному ID")
+def test_get_reviews_invalid_id():
+    """Тест получения списка рецензий от зрителей по неверному ID"""
+    url = f"{baseURL}/api/v2.2/films/{invalidID}/reviews"
+
+    with allure.step("Отправка GET-запроса для получения списка рецензий по \
+                     неверному ID"):
+        response = requests.get(url, headers=headers)
+
+    with allure.step("Проверка, что статус код ответа - 400"):
+        assert response.status_code == 400, f"Unexpected status code: {
+            response.status_code}"
+
+    with allure.step("Проверка содержимого JSON-ответа на наличие сообщения об\
+                     ошибке"):
+        data = response.json()
+        assert "message" in data, "В ответе отсутствует ключ 'message'"
+        allure.attach(data["message"], name="Сообщение об ошибке",
+                      attachment_type=allure.attachment_type.TEXT)
