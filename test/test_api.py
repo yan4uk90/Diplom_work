@@ -4,11 +4,11 @@ import pytest
 import allure
 
 # Переменные
-baseURL = "TGRC0EB-VDQMMR8-N06G0BE-B5HDW3S"
+baseURL = "https://api.kinopoisk.dev/v1.4"
 movie_id = 1130363
 invalidID = "ERROR"  # Неверный ID
 headers = {
-    "X-API-KEY": "a42e4573-55d5-48b8-bc51-9af46eeb0268"
+    "X-API-KEY": "P9MD4VB-3ZPMSAE-Q0A1X8J-Y44118K"
 }
 
 
