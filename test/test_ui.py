@@ -10,7 +10,7 @@ import os
 @allure.feature("UI Tests for Kinopoisk")
 class TestKinopoiskUI:
 
-    @allure.story("Поиск фильма по названию")
+    @allure.title("Поиск фильма по названию")
     def test_search_movie_by_title(self):
         search_bar = self.driver.find_element(
             By.CSS_SELECTOR, "input[placeholder='Фильмы, сериалы, персоны']")
@@ -25,7 +25,7 @@ class TestKinopoiskUI:
         assert "Интерстеллар" in self.driver.title, "Не удалось открыть \
             страницу фильма 'Интерстеллар'"
 
-    @allure.story("Просмотр подробной информации о фильме")
+    @allure.title("Просмотр подробной информации о фильме")
     def test_view_movie_details(self):
         search_bar = self.driver.find_element(
             By.CSS_SELECTOR, "input[placeholder='Фильмы, сериалы, персоны']")
@@ -46,7 +46,7 @@ class TestKinopoiskUI:
             отображается"
         print("Подробная информация о фильме:", movie_info.text)
 
-    @allure.story("Получение постера фильма")
+    @allure.title("Получение постера фильма")
     def test_get_movie_poster(self):
         search_bar = self.driver.find_element(
             By.CSS_SELECTOR, "input[placeholder='Фильмы, сериалы, персоны']")
@@ -87,7 +87,7 @@ class TestKinopoiskUI:
         else:
             assert False, "Не удалось загрузить постер фильма"
 
-    @allure.story("Сортировка фильмов по жанру")
+    @allure.title("Сортировка фильмов по жанру")
     def test_sort_movies_by_genre(self):
         # Ожидание загрузки главной страницы
         WebDriverWait(self.driver, 20).until(
@@ -146,7 +146,7 @@ class TestKinopoiskUI:
         assert results_count > 0, "Не найдено результатов для жанра \
             'биография'"
 
-    @allure.story("Проверка информации об актерах")
+    @allure.title("Проверка информации об актерах")
     def test_check_actor_info(self):
         # Переход на страницу фильма
         search_bar = self.driver.find_element(
