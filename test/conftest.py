@@ -1,17 +1,12 @@
 import pytest
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
-from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.webdriver import WebDriver
 
 
-@pytest.fixture(scope="function", autouse=True)
-def setup():
-    """
-    Фикстура для создания и закрытия браузера Chrome.
-    """
-    service = ChromeService(executable_path=ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service)
-    driver.implicitly_wait(20)
-    driver.get("https://www.kinopoisk.ru/")
-    yield
+@pytest.fixture
+def driver() -> WebDriver:
+    driver = webdriver.Chrome()
+    driver.maximize_window()
+    driver.implicitly_wait(10)
+    yield driver
     driver.quit()
